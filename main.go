@@ -1,17 +1,17 @@
 package main
 
 import (
-	"encoding/csv"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
+	"encoding/csv"
+	"flag"
 )
 
 var (
 	infile   = flag.String("i", "", "File to be masked.")
-	outfile  = flag.String("o", "", "File to be masked.")
 	indelim  = flag.String("d", ",", "Delimiter of input file.")
+	outfile  = flag.String("o", "", "File to be masked.")
 	outdelim = flag.String("s", ",", "Delimiter of output file.")
 	masklen  = flag.Int("l", 2, "Number of the letters to mask.")
 	maskchar = flag.String("m", "X", "Character to be used as the mask.")
@@ -37,7 +37,7 @@ func readInputFile(f string, del rune) [][]string {
 	return rcds
 }
 
-func writeAsCSV(f string, del rune, masked [][]string) string {
+func writeAsCSV(f string, del rune, masked [][]string) int {
 	fp, err := os.Create(f)
 	if err != nil {
 		fmt.Println("ERROR: No output filename specified :-(")
@@ -49,7 +49,7 @@ func writeAsCSV(f string, del rune, masked [][]string) string {
 	w.Comma = del
 
 	w.WriteAll(masked)
-	return "ok"
+	return 0
 }
 
 func getFieldIndex(flds []string, hdr []string) map[string]int {
@@ -91,7 +91,9 @@ func main() {
 	}
 
 	result := writeAsCSV(*outfile, outdel, masked)
-	if result == "ok" {
+	if result == 0 {
 		fmt.Println("Masking successfully finished!")
+	} else {
+		fmt.Println("Something wrong happened...")
 	}
 }
