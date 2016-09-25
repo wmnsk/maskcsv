@@ -4,7 +4,7 @@ Masks the last X letters in specified fields in a CSV, can be executed on Linux,
 
 ## Example
 
-* Simply masking CSV:
+* Simply masking CSV
 ```shell-session
 # cat test.csv
 name,age,telephone,password
@@ -32,7 +32,6 @@ Ichiro;42;818012345678;ichiro1234
 Matsui;42;819012345678;hideki99
 Darvish;30;818098765432;yu19860816
 # maskcsv -i test.csv -o testx.csv -f "telephone,password" -m "x" -l 4 -d ";" -s ","
-#
 Masking successfully finished!
 #
 # cat testx.csv
