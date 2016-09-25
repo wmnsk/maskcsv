@@ -4,7 +4,7 @@ Masks the last X letters in specified fields in a CSV, can be executed on Linux,
 
 ## Example
 
-* #### Simply masking CSV:
+* Simply masking CSV:
 ```shell-session
 # cat test.csv
 name,age,telephone,password
@@ -22,7 +22,7 @@ Matsui,42,81901234xxxx,hidexxxx
 Darvish,30,81809876xxxx,yu1986xxxx
 ```
 
-* #### Masking semicolon-delimited file to CSV  
+* Masking semicolon-delimited file to CSV  
 Currently tabs and whitespace are NOT supported.  
 You can use only single character as the delimiter.
 ```shell-session
