@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"flag"
 	"strings"
 	"encoding/csv"
-	"flag"
 )
+
+type Records [][]string
+type FieldIndice map[string]int
 
 var (
 	infile   = flag.String("i", "", "File to be masked.")
@@ -18,15 +21,15 @@ var (
 	fields   = flag.String("f", "no,header,val", "Path to the original CSV file to be masked.")
 )
 
-func readInputFile(f string, del rune) [][]string {
-	fp, err := os.Open(f)
+func readInputFile(inPath string, del rune) Records {
+	inFile, err := os.Open(inPath)
 	if err != nil {
 		fmt.Println("ERROR: No input file specified :-(")
 		panic(err)
 	}
-	defer fp.Close()
+	defer inFile.Close()
 
-	r := csv.NewReader(fp)
+	r := csv.NewReader(inFile)
 	r.Comma = del
 	r.LazyQuotes = true
 
@@ -37,22 +40,22 @@ func readInputFile(f string, del rune) [][]string {
 	return rcds
 }
 
-func writeAsCSV(f string, del rune, masked [][]string) int {
-	fp, err := os.Create(f)
+func writeAsCSV(outPath string, del rune, masked Records) int {
+	outFile, err := os.Create(outPath)
 	if err != nil {
 		fmt.Println("ERROR: No output filename specified :-(")
 		panic(err)
 	}
-	defer fp.Close()
+	defer outFile.Close()
 
-	w := csv.NewWriter(fp)
+	w := csv.NewWriter(outFile)
 	w.Comma = del
 
 	w.WriteAll(masked)
 	return 0
 }
 
-func getFieldIndex(flds []string, hdr []string) map[string]int {
+func getFieldIndex(flds []string, hdr []string) FieldIndice {
 	hdrs := make(map[string]int)
 	for _, f := range flds {
 		for n, r := range hdr {
@@ -79,7 +82,7 @@ func main() {
 	records := readInputFile(*infile, indel)
 	indice := getFieldIndex(fields, records[0])
 
-	masked := make([][]string, len(records))
+	masked := make(Records, len(records))
 	for i, line := range records {
 		for _, v := range indice {
 			if (i == 0) || (len(line[v]) == 0) || (len(line[v]) < *masklen) {
