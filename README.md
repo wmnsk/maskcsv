@@ -64,7 +64,7 @@ Usage of mask_csv:
 
 ## LICENSE
 
-#### [MIT](https://github.com/wmnsk/maskcsv/blob/master/MIT.md) ####
+#### [MIT](https://github.com/wmnsk/maskcsv/blob/master/LICENSE) ####
 
 ## Author
 
