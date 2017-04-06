@@ -1,15 +1,15 @@
 package main
 
 import (
+	"encoding/csv"
+	"flag"
 	"fmt"
 	"os"
-	"flag"
 	"strings"
-	"encoding/csv"
 )
 
 type Records [][]string
-type FieldIndice map[string]int
+type FieldIndex map[string]int
 
 var (
 	infile   = flag.String("i", "", "File to be masked.")
@@ -21,11 +21,10 @@ var (
 	fields   = flag.String("f", "no,header,val", "Path to the original CSV file to be masked.")
 )
 
-func readInputFile(inPath string, del rune) Records {
+func readInputFile(inPath string, del rune) (Records, error) {
 	inFile, err := os.Open(inPath)
 	if err != nil {
-		fmt.Println("ERROR: No input file specified :-(")
-		panic(err)
+		return nil, err
 	}
 	defer inFile.Close()
 
@@ -35,16 +34,16 @@ func readInputFile(inPath string, del rune) Records {
 
 	rcds, err := r.ReadAll()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return rcds
+
+	return rcds, nil
 }
 
-func writeAsCSV(outPath string, del rune, masked Records) int {
+func writeAsCSV(outPath string, del rune, masked Records) error {
 	outFile, err := os.Create(outPath)
 	if err != nil {
-		fmt.Println("ERROR: No output filename specified :-(")
-		panic(err)
+		return err
 	}
 	defer outFile.Close()
 
@@ -52,10 +51,10 @@ func writeAsCSV(outPath string, del rune, masked Records) int {
 	w.Comma = del
 
 	w.WriteAll(masked)
-	return 0
+	return nil
 }
 
-func getFieldIndex(flds []string, hdr []string) FieldIndice {
+func getFieldIndex(flds []string, hdr []string) FieldIndex {
 	hdrs := make(map[string]int)
 	for _, f := range flds {
 		for n, r := range hdr {
@@ -79,12 +78,17 @@ func main() {
 	outdel := []rune(*outdelim)[0]
 	fields := strings.Split(*fields, ",")
 
-	records := readInputFile(*infile, indel)
-	indice := getFieldIndex(fields, records[0])
+	records, err := readInputFile(*infile, indel)
+	if err != nil {
+		fmt.Printf("Failed reading CSV file: %s\n", err)
+		flag.Usage()
+		os.Exit(1)
+	}
 
+	indexes := getFieldIndex(fields, records[0])
 	masked := make(Records, len(records))
 	for i, line := range records {
-		for _, v := range indice {
+		for _, v := range indexes {
 			if (i == 0) || (len(line[v]) == 0) || (len(line[v]) < *masklen) {
 			} else {
 				line[v] = maskLastLetters(line[v], *maskchar, *masklen)
@@ -93,10 +97,9 @@ func main() {
 		masked[i] = line
 	}
 
-	result := writeAsCSV(*outfile, outdel, masked)
-	if result == 0 {
-		fmt.Println("Masking successfully finished!")
-	} else {
-		fmt.Println("Something wrong happened...")
+	if err := writeAsCSV(*outfile, outdel, masked); err != nil {
+		fmt.Printf("Failed writing CSV file: %s\n", err)
+		os.Exit(1)
 	}
+	fmt.Println("Masking successfully finished!")
 }
